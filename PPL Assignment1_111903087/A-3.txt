@@ -1,0 +1,59 @@
+---------
+A-3 Loops
+---------
+
+C code and Gimple output
+
+
+ int main()                                                                           |main ()
+        {                                                                             |{
+            int sum = 0;                                                              |  int D.1922;
+            int i, j;                                                                 |
+                                                                                      |  {
+            while(sum < 100) {                                                        |    int sum;
+                    sum = sum * 2;                                                    |    int i;
+            }                                                                         |    int j;
+                                                                                      |
+            for(i=0; i<25; i++) {                                                     |    sum = 0;
+                    for(j=0; j<50; j++) {                                             |    goto <D.1913>;
+                            sum = sum + i*j;                                          |    <D.1912>:
+                    }                                                                 |    sum = sum * 2;
+            }                                                                         |    <D.1913>:
+        }                                                                             |    if (sum <= 99) goto <D.1912>; else goto <D.1914>;
+~                                                                                     |    <D.1914>:
+~                                                                                     |    i = 0;
+~                                                                                     |    goto <D.1919>;
+~                                                                                     |    <D.1918>:
+~                                                                                     |    j = 0;
+~                                                                                     |    goto <D.1916>;
+~                                                                                     |    <D.1915>:
+~                                                                                     |    _1 = i * j;
+~                                                                                     |    sum = sum + _1;
+~                                                                                     |    j = j + 1;
+~                                                                                     |    <D.1916>:
+~                                                                                     |    if (j <= 49) goto <D.1915>; else goto <D.1917>;
+~                                                                                     |    <D.1917>:
+~                                                                                     |    i = i + 1;
+~                                                                                     |    <D.1919>:
+~                                                                                     |    if (i <= 24) goto <D.1918>; else goto <D.1920>;
+~                                                                                     |    <D.1920>:
+~                                                                                     |  }
+~                                                                                     |  D.1922 = 0;
+~                                                                                     |  return D.1922;
+A-3.c                                                                                  A-3.c.005t.gimple
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Answers-
+
+Q1)
+Basic blocks 3 , 4 are associated with the while loop.
+Basic block 2 has unconditional basic block 4 which is the while loop conditional.Thereby Basic block 2 
+avoids executing an iteration. This is different from the if-else jumps, which always seem
+to be conditional.
+
+Q2)
+A for-loop  is  nothing  but  a  while-loop  with  the  initializer
+separated out  into an  initial basic  block, the  body of  the loop
+subsequently, the  increment part at the  end of the loop  body, and
+the conditional jump back to the start of the loop.

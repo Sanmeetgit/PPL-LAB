@@ -1,0 +1,94 @@
+----------------------------------------------
+A-1 Declarations, Expressions, and Assignments
+----------------------------------------------
+
+C code and Gimple output
+
+int Z;                                                                                |main ()
+                                                                                      |{
+        void main()                                                                   |  int a;
+        {                                                                             |  int b;
+                int a, b, c;                                                          |  int c;
+                int p = 6;                                                            |  int p;
+                int q;                                                                |  int q;
+                double r;                                                             |  double r;
+                                                                                      |
+                a = 10;                                                               |  p = 6;
+                b = 20;                                                               |  a = 10;
+                c = a * b + 25;                                                       |  b = 20;
+                p = 6;                                                                |  _1 = a * b;
+                q = Z;                                                                |  c = _1 + 25;
+                r = 34.5;                                                             |  p = 6;
+                Z = r;                                                                |  q = Z;
+                Z = Z + 1;                                                            |  r = 3.45e+1;
+        }                                                                             |  _2 = (int) r;
+~                                                                                     |  Z = _2;
+~                                                                                     |  Z.0_3 = Z;
+~                                                                                     |  _4 = Z.0_3 + 1;
+~                                                                                     |  Z = _4;
+~                                                                                     |}
+~                                                                                     |
+A-1.c                                                                                  A-1.c.005t.gimple
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+
+Answers-
+
+Q1)
+There is only one declaration on a single line in the gimple.If multiple variables are declared on the same line,they are 
+declared on different lines in gimple.Global variable z's declaration is not seen in the gimple output.In order to use z, 
+it's value should be loaded/stored from locals.
+
+Q2)
+Complex expressions are broken down in such a way that only one operation is performed per line.
+First the simpler terms in the complex operation are evaluted using temporary variable.
+When intermidiate operations are involved in the complex one,then the temporary variables are introduced.
+
+Q3)
+Floats and doubles are represented in the gimple using scientific notation.
+When float/double is assigned to an integer, the explicit type cast is performed and
+that type casted value is stored in temporary variable.Then that temporary variable is
+assigned to z.
+
+Q4)
+Reads or writes to global variable are performed using temporary variable.
+A temporary variale is required for z = z + 1 because the value of evaluation of z + 1 is not
+directly written into the memory location.
+
+
+
+Optional problem
+----------------
+
+Raw dump:
+
+main ()
+gimple_bind <
+  int D.1713;
+  int Z.0;
+  int Z.1;
+  int Z.2;
+  int a;
+  int b;
+  int c;
+  int p;
+  int q;
+  double r;
+
+  gimple_assign <integer_cst, p, 6, NULL>
+  gimple_assign <integer_cst, a, 10, NULL>
+  gimple_assign <integer_cst, b, 20, NULL>
+  gimple_assign <mult_expr, D.1713, a, b>
+  gimple_assign <plus_expr, c, D.1713, 25>
+  gimple_assign <integer_cst, p, 6, NULL>
+  gimple_assign <var_decl, q, Z, NULL>
+  gimple_assign <real_cst, r, 3.45e+1, NULL>
+  gimple_assign <fix_trunc_expr, Z.0, r, NULL>
+  gimple_assign <var_decl, Z, Z.0, NULL>
+  gimple_assign <var_decl, Z.1, Z, NULL>
+  gimple_assign <plus_expr, Z.2, Z.1, 1>
+  gimple_assign <var_decl, Z, Z.2, NULL>
+>
+
+This looks like a raw dump of tree nodes - internally, there is a tree structure
+to gimple, though the dumps normally present it in a more human-readable form.

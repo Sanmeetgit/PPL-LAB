@@ -1,0 +1,93 @@
+---------------------------
+B-3 Value Range Propagation
+---------------------------
+
+C code and Gimple output-
+
+#include <stdio.h>                                                                    |main ()
+int main ()                                                                           |{
+{                                                                                     |  int D.3100;
+        int a, b;                                                                     |
+        for (a=4 ; a<100; a++) {                                                      |  {
+                if (a < 4)                                                            |    int a;
+                        b = b + 2;                                                    |    int b;
+                else                                                                  |
+                        b = b * 2;                                                    |    a = 4;
+           }                                                                          |    goto <D.3094>;
+        printf("%d%d", a, b);                                                         |    <D.3093>:
+}                                                                                     |    if (a <= 3) goto <D.3097>; else goto <D.3098>;
+~                                                                                     |    <D.3097>:
+~                                                                                     |    b = b + 2;
+~                                                                                     |    goto <D.3099>;
+~                                                                                     |    <D.3098>:
+~                                                                                     |    b = b * 2;
+~                                                                                     |    <D.3099>:
+~                                                                                     |    a = a + 1;
+~                                                                                     |    <D.3094>:
+~                                                                                     |    if (a <= 99) goto <D.3093>; else goto <D.3095>;
+~                                                                                     |    <D.3095>:
+~                                                                                     |    printf ("%d%d", a, b);
+~                                                                                     |  }
+~                                                                                     |  D.3100 = 0;
+~                                                                                     |  return D.3100;
+~                                                                                     |}
+B-3.c                                                                                  B-3.c.005t.gimple
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ssa and vrp1 output-
+                                                                                      |
+;; Function main (main, funcdef_no=12, decl_uid=3089, cgraph_uid=13, symbol_order=12) |;; Function main (main, funcdef_no=12, decl_uid=3089, cgraph_uid=13, symbol_order=12)
+                                                                                      | (executed once)
+main ()                                                                               |
+{                                                                                     |;; 2 loops found
+  int b;                                                                              |;;
+  int a;                                                                              |;; Loop 0
+  int _8;                                                                             |;;  header 0, latch 1
+                                                                                      |;;  depth 0, outer -1
+  <bb 2> :                                                                            |;;  nodes: 0 1 2 3 4 5
+  a_4 = 4;                                                                            |;;
+  goto <bb 7>; [INV]                                                                  |;; Loop 1
+                                                                                      |;;  header 4, latch 3
+  <bb 3> :                                                                            |;;  depth 1, outer 0
+  if (a_1 <= 3)                                                                       |;;  nodes: 4 3
+    goto <bb 4>; [INV]                                                                |;; 2 succs { 4 }
+  else                                                                                |;; 3 succs { 4 }
+    goto <bb 5>; [INV]                                                                |;; 4 succs { 3 5 }
+                                                                                      |;; 5 succs { 1 }
+  <bb 4> :                                                                            |
+  b_10 = b_3 + 2;                                                                     |SSA replacement table
+  goto <bb 6>; [INV]                                                                  |N_i -> { O_1 ... O_j } means that N_i replaces O_1, ..., O_j
+                                                                                      |
+  <bb 5> :                                                                            |b_6 -> { b_2 }
+  b_9 = b_3 * 2;                                                                      |Incremental SSA update started at block: 4
+                                                                                      |Number of blocks in CFG: 6
+  <bb 6> :                                                                            |Number of blocks to update: 3 ( 50%)
+  # b_2 = PHI <b_10(4), b_9(5)>                                                       |
+  a_11 = a_1 + 1;                                                                     |
+                                                                                      |
+  <bb 7> :                                                                            |SSA replacement table
+  # a_1 = PHI <a_4(2), a_11(6)>                                                       |N_i -> { O_1 ... O_j } means that N_i replaces O_1, ..., O_j
+  # b_3 = PHI <b_5(D)(2), b_2(6)>                                                     |
+  if (a_1 <= 99)                                                                      |a_9 -> { a_1 }
+    goto <bb 3>; [INV]                                                                |Incremental SSA update started at block: 4
+  else                                                                                |Number of blocks in CFG: 6
+    goto <bb 8>; [INV]                                                                |Number of blocks to update: 2 ( 33%)
+                                                                                      |
+  <bb 8> :                                                                            |
+  printf ("%d%d", a_1, b_3);                                                          |
+  _8 = 0;                                                                             |Value ranges after VRP:
+  return _8;                                                                          |
+                                                                                      |a_1: int [4, 100]
+}                                                                                     |b_2: VARYING
+                                                                                      |b_3(D): UNDEFINED
+                                                                                      |b_6: int [b_2, b_2]
+~                                                                                     |b_7: VARYING
+B-3.c.019t.ssa                                                                         B-3.c.102t.vrp1
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Answers-
+
+Q1)
+a takes on the values 4 to 100, but only 4 to 99 within the scope of the loop
+body. The if condition will never be true, and the code in the taken branch
+appears to have been eliminated.

@@ -1,0 +1,64 @@
+-----------------------
+A-4 Arrays and Pointers
+-----------------------
+
+C code and Gimple output
+
+
+int main()                                                                            |main ()
+        {                                                                             |{
+            int a[3];                                                                 |  int D.1917;
+            int b[] = {1, 2, 3};                                                      |
+            int i, *p;                                                                |  {
+            for (i=0; i<3; i++) {                                                     |    int a[3];
+                a[i] = b[i];                                                          |    int b[3];
+            }                                                                         |    int i;
+            p = a;                                                                    |    int * p;
+            *(p + 2) = 5;                                                             |
+        }                                                                             |    try
+~                                                                                     |      {
+~                                                                                     |        b[0] = 1;
+~                                                                                     |        b[1] = 2;
+~                                                                                     |        b[2] = 3;
+~                                                                                     |        i = 0;
+~                                                                                     |        goto <D.1914>;
+~                                                                                     |        <D.1913>:
+~                                                                                     |        _1 = b[i];
+~                                                                                     |        a[i] = _1;
+~                                                                                     |        i = i + 1;
+~                                                                                     |        <D.1914>:
+~                                                                                     |        if (i <= 2) goto <D.1913>; else goto <D.1915>;
+~                                                                                     |        <D.1915>:
+~                                                                                     |        p = &a;
+~                                                                                     |        _2 = p + 8;
+~                                                                                     |        *_2 = 5;
+~                                                                                     |      }
+~                                                                                     |    finally
+~                                                                                     |      {
+~                                                                                     |        a = {CLOBBER};
+~                                                                                     |        b = {CLOBBER};
+~                                                                                     |      }
+~                                                                                     |  }
+~                                                                                     |  D.1917 = 0;
+~                                                                                     |  return D.1917;
+~                                                                                     |}
+A-4.c                                                                                  A-4.c.005t.gimple
+
+----------------------------------------------------------------------------------------------------------------------------------------------------
+Answers-
+
+Q1)
+Just like scalar initialization,it is split from the declaration and included in the procedure body.
+Arrays are declared in the gimple in a single statement with no initialisation and explicit
+size.Elements in the array are assigned on the separate lines in the basic block.
+
+Q2)
+In many computer architectures, only one memory operation is allowed per instruction.
+Gimple can perform only operation per statement.It can not read and write locations at the time.
+This way of operation probably makes its performance easy.
+
+Q3)
+CLOBBER statements are used for  address-escaped variables.It is an annotation to signify that  
+the scope of this address-escaped variable has ended.
+To mark the arrays as invalid at scope exit - probably to simplify analysis
+and permit reuse of stack slots,etc.

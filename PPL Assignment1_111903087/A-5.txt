@@ -1,0 +1,52 @@
+-----------------------------
+A-5 Static Single Assignment
+-----------------------------
+
+C code and Gimple output
+
+ int main()                                                                           |main ()
+        {                                                                             |{
+            int a, b, c, d;                                                           |  int D.1917;
+                                                                                      |
+            d = 10;                                                                   |  {
+            if (c > d) {                                                              |    int a;
+                a = 3;                                                                |    int b;
+                b = 2;                                                                |    int c;
+            } else {                                                                  |    int d;
+                a = 2;                                                                |
+                b = 3;                                                                |    d = 10;
+            }                                                                         |    if (c > d) goto <D.1914>; else goto <D.1915>;
+                                                                                      |    <D.1914>:
+            c = a + b;                                                                |    a = 3;
+        }                                                                             |    b = 2;
+~                                                                                     |    goto <D.1916>;
+~                                                                                     |    <D.1915>:
+~                                                                                     |    a = 2;
+~                                                                                     |    b = 3;
+~                                                                                     |    <D.1916>:
+~                                                                                     |    c = a + b;
+~                                                                                     |  }
+~                                                                                     |  D.1917 = 0;
+~                                                                                     |  return D.1917;
+~                                                                                     |}
+A-5.c                                                                                  A-5.c.005t.gimple
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+Answers-
+
+Q1)
+Variables that are likely to be used before any assignment are suffixed  with `(D)' to
+indicate that the assignment was implicit in the declaration.This happens to both uninitialized
+local variables and formal parameters.For example, variable `c' is used as `c_4(D)' in the `if' 
+condition.This is more like the SSA form. Maybe (D) means it is missing a definition. 
+(e.g. c is undefined in its use in the first conditional).
+
+Q2)
+Syntax of phi statements is probably PHI < prec_1, prec_2, ... prec_n > where
+prec_i is name(bb) - name being the name of the variable and bb the number of
+the basic block in which it was declared. There will be a prec_i for ecah
+preceding BB from which control flow can enter the current BB.
+
+Q3)
+This could come from a switch statement or cascading if-else blocks.A switch statement can 
+result in a merge of more than two paths (and hence possibly more than two assignments).
