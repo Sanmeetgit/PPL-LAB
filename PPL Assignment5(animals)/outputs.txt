@@ -1,0 +1,50 @@
+Outputs for some different objects-->
+
+
+1)tortoise
+
+sanmeetcoep@LAPTOP-5GKTUFRD:~/ppl$ python3 animals.py
+Moan
+Fresh vegetables like kale, mustard, etc
+Live in water as well as on land
+Lay eggs
+Animals can not synthesize their own food
+No. of eyes 2
+No. of limbs 4
+
+
+2)sparrow
+
+sanmeetcoep@LAPTOP-5GKTUFRD:~/ppl$ python3 animals.py
+cheep or chirping
+Grains, seeds, insects, etc
+Habitat is aerial
+Lay eggs
+Animals can not synthesize their own food
+No. of eyes 2
+No. of limbs 4
+
+
+3)rhino
+
+sanmeetcoep@LAPTOP-5GKTUFRD:~/ppl$ python3 animals.py
+grunting or growling
+Trees, bushes, grass, etc
+Very less in number and on the way to extinct
+Give directly birth to their young ones
+Animals can not synthesize their own food
+No. of eyes 2
+No. of limbs 4
+
+
+4)JavanTiger
+
+sanmeetcoep@LAPTOP-5GKTUFRD:~/ppl$ python3 animals.py
+roar
+Wild boars, deers, etc
+No more existence on the earth
+Give directly birth to their young ones
+Animals can not synthesize their own food
+No. of eyes 2
+No. of limbs 4
+
